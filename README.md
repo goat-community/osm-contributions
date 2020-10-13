@@ -1,6 +1,6 @@
 #### Scripts OSM-contribution
 
-This repository contains some experimental scripts to count OSM-contributions for a particular area of interest and summarizes them per assessed username in CSV-tables. 
+This repository contains some experimental scripts to count OSM-contributions for a particular area of interest and summarizes them per assessed username in CSV-tables and creates Geojson-file of the modified/created geometries. 
 
 #### How to use
 
@@ -13,5 +13,5 @@ This repository contains some experimental scripts to count OSM-contributions fo
 
 4. Run the scripts `contribution_analysis.py`
 
-5. Check the CSV-file in results. 
+5. Check the CSV-files and Geojson-file in results-folder. 
 
