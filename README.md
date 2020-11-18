@@ -7,7 +7,7 @@ This repository contains some experimental scripts to count OSM-contributions fo
 1. Run script `overpass_query.py` to obtain changesets in XML format. 
 (Note you need to adjust the overpass query to properly obtain the data that you need.)
 
-2. Save the XML-file in the changesets folder and rename it according the feature type. (points.xml, lines.xml, polygons.xml)
+2. Save the XML-file in the changesets folder and rename it according the feature type. (point.xml, line.xml, polygon.xml)
 
 3. Adjust the directory if necessary in `contribution_analysis.py`.
 
