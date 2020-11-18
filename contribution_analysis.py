@@ -137,7 +137,7 @@ def contributions_by_mapper(geoms_features, mapper, geom_type, xml_file):
 osm_mappers = list(dict.fromkeys(contributors))
 
 for geom_type in ['point','line','polygon']:
-    f_path = 'changesets/%s.xml' % geom_type
+    f_path = 'changesets/%s.osm' % geom_type
     xml_file = open_xml(f_path)
 
     geoms_features = []
