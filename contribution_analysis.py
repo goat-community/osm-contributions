@@ -40,7 +40,6 @@ def parse_geom(geom_xml,geom_type,modification_type):
             geometry['properties']['modification_type'] = modification_type
         if geom_type == 'polygon':
             geometry = Feature(geometry=Polygon([list(reversed(coordinates))]))
-            print(coordinates)
             geometry['properties']['modification_type'] = modification_type
         dist = distance.distance(*coordinates).meters
         
@@ -53,7 +52,7 @@ def parse_geom(geom_xml,geom_type,modification_type):
         
     return coordinates, dist, geometry
 
-def contributions_by_mapper(geoms_features, mapper, geom_type, xml_file):  
+def contributions_by_mapper(geoms_features, mapper, geom_type, xml_file, total_count, reached_points_mappers, total_count_attributes):  
     #All modified features will be analyzed
     list_modified_keys = []
     count_modified = 0
@@ -106,6 +105,9 @@ def contributions_by_mapper(geoms_features, mapper, geom_type, xml_file):
     if not df_attrib.empty:
         
         df_attrib = df_attrib.groupby('attributes').size().to_frame()
+        
+        total_count_attributes = total_count_attributes.append(df_attrib)
+        
         df_attrib['Mapper'] = mapper
         df_attrib.to_csv('results/'+geom_type+'_changed_attributes.csv',mode='a',header=False)
              
@@ -123,18 +125,31 @@ def contributions_by_mapper(geoms_features, mapper, geom_type, xml_file):
                 geoms_features.append(geom_new[2])
                 total_length = total_length + dist
         
-               
+        
+    reached_points = points_mapping_contest["modified"] *count_modified +points_mapping_contest["created"] * count_created +points_mapping_contest["deleted"] * count_deleted
         
     with open('results/'+geom_type+'_count_features.csv','a') as fd:
         fd.write(mapper+',modified_features,'+str(count_modified)+'\n')
         fd.write(mapper+',deleted_features,'+str(count_deleted)+'\n')
         fd.write(mapper+',created_features,'+str(count_created)+'\n')
         fd.write(mapper+',total_size,'+str(total_length)+'\n')
-
-    return geoms_features
+        fd.write(mapper+',reached_points,'+str(reached_points)+'\n')
+    
+    total_count[geom_type]["count_modified"] += count_modified
+    total_count[geom_type]["count_deleted"] += count_deleted
+    total_count[geom_type]["count_created"] += count_created
+    
+    reached_points_mappers[mapper] = reached_points_mappers[mapper] + reached_points
+    
+    return geoms_features, total_count, reached_points_mappers, total_count_attributes
 
 
 osm_mappers = list(dict.fromkeys(contributors))
+reached_points_mappers = dict.fromkeys(contributors,0)
+total_count_attributes = pd.DataFrame()
+
+
+total_count = {"line":{"count_modified":0,"count_deleted":0,"count_created":0},"point":{"count_modified":0,"count_deleted":0,"count_created":0}, "polygon":{"count_modified":0,"count_deleted":0,"count_created":0}}
 
 for geom_type in ['point','line','polygon']:
     f_path = 'changesets/%s.osm' % geom_type
@@ -142,6 +157,7 @@ for geom_type in ['point','line','polygon']:
 
     geoms_features = []
     
+   
     with open('results/'+geom_type+'_changed_attributes.csv','w') as fd: 
         fd.write('attribute,count,mapper\n')
         
@@ -149,12 +165,16 @@ for geom_type in ['point','line','polygon']:
         fd.write('mapper,edit_type,count\n')    
         
     for mapper in osm_mappers:
-        geoms_features = contributions_by_mapper(geoms_features, mapper, geom_type, xml_file)
+        geoms_features, total_count, reached_points_mappers, total_count_attributes = contributions_by_mapper(geoms_features, mapper, geom_type, xml_file, total_count, reached_points_mappers, total_count_attributes)
     
-    with open('results/'+geom_type+'_geometries.geojson','w') as geoms: 
+    
+    total_count_attributes.groupby('attributes').sum().to_csv('results/%s_total_count_attributes.csv' % geom_type,mode='w')
+      
+    with open('results/%s_geometries.geojson' % geom_type,'w') as geoms: 
         geoms.write(str(FeatureCollection(geoms_features)))
     
-
+pd.DataFrame.from_dict(total_count).to_csv('results/total_count.csv',mode='w')
+pd.Series(reached_points_mappers).to_csv('results/reached_points_mappers.csv',mode='w')
 
 
 
