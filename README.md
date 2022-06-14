@@ -33,9 +33,11 @@ out meta geom;`
 
 2. Save the XML-files in the changesets folder and rename it according the feature type. (point.osm, line.osm, polygon.osm)
 
-3. Adjust the directory if necessary in `contribution_analysis.py`.
+3. Add the contributors to `osm_mappers.py´.
 
-4. Run the scripts `contribution_analysis.py`
+4. Adjust the directory if necessary in `contribution_analysis.py`.
 
-5. Check the CSV-files and Geojson-file in results-folder. 
+5. Run the scripts `contribution_analysis.py`
+
+6. Check the CSV-files and Geojson-file in results-folder. 
 
